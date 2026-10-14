@@ -1,0 +1,26 @@
+P[350]: [N10] Z. Wang, X. Wang, and H. Wang, “Temporal graph neural networks for money laundering detection in cross-border transactions,” Academia Nexus Journal, vol. 3, no. 2, Aug. 2024 (abstract read only).
+
+P[351]: [N11] O. R. Tiamiyu, “Unveiling hidden money laundering networks: The application of graph neural networks in financial transaction analysis,” J. Comput. Anal. Appl., vol. 34, no. 9, 2025 (abstract read only).
+
+P[352]: Foundational GNN papers by Kipf and Welling (GCN, ICLR 2017), Veličković et al. (GAT, ICLR 2018) and Hamilton et al. (GraphSAGE, NeurIPS 2017) are described in the text but are not IEEE publications [IEEE SOURCE REQUIRED if the department insists on IEEE only; otherwise cite the original venues].
+
+P[353]: Appendix B  Reproducibility and file map
+
+P[354]: 
+
+P[355]: To fill Tables 10–13: (1) `python run_experiments.py saml --seeds 5` and the same with `--keep_leaky`; (2) download elliptic_txs_edgelist.csv and elliptic_txs_classes.csv, place them with elliptic_txs_features.csv in an `elliptic/` folder, then run `python run_experiments.py elliptic --features all` and `--features local`. Record Python and PyTorch versions and the hardware in Table 8. The script was written without access to PyTorch in the authoring environment; its Elliptic data loader was checked on the student's feature file with synthetic labels, but the training code has not been executed.
+
+P[356]: Appendix C  Code audit notes
+
+P[357]: Feature 13 (illicit-neighbour fraction) uses ground-truth labels of all nodes; feature 14 is random noise.
+
+P[358]: Node label = any incident laundering edge; sampling forces about 25% laundering edges.
+
+P[359]: The reservoir step for normal rows draws random.randint(0, total_scanned), which is not a uniform reservoir over normal rows only; the licit sample is therefore approximately, not exactly, uniform.
+
+P[360]: Edge features are stored but unused by the GNN layers; explanation for GCN, GraphSAGE and MLP uses heuristic influence weights.
+
+P[361]: The web-application default trains for 60 epochs, the benchmark routine for 100 and the engine default is 120; use a single value for reported experiments.
+
+P[362]: The project abstract lists PyTorch Geometric, Pandas, Matplotlib and Jupyter; the application code uses custom PyTorch, NetworkX, NumPy, scikit-learn and Flask, while pandas, seaborn and matplotlib appear only in the EDA notebook.
+

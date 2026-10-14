@@ -1,0 +1,150 @@
+P[250]: where ‖ is concatenation and Normalize is L2 normalisation. Because the self representation is kept separate from the neighbourhood mean, GraphSAGE can in principle preserve a node's own signal better than GCN. The original method samples a fixed number of neighbours to scale to large graphs and can generalise to unseen nodes [2]; the implementation here averages over all neighbours of the dense adjacency and therefore does not use sampling.
+
+P[251]: 10.4  Baseline MLP
+
+P[252]: The MLP uses only each node's own features, with the same hidden sizes and dropout. Comparing it with the GNNs separates the contribution of graph structure from that of the engineered features. Because several engineered features are themselves graph statistics (degree, PageRank, betweenness), the baseline is not "graph-free" in information; it simply does not propagate messages. This limits how strongly any GNN advantage can be attributed to message passing.
+
+P[253]: 10.5  Loss, optimisation and prediction
+
+P[254]: To handle imbalance, the default loss is the focal loss with class weighting,
+
+P[255]: FL(p_t) = − α_t (1 − p_t)^γ log(p_t),   α = 0.75 (illicit), 1 − α (licit), γ = 2        (7)
+
+P[256]: where p_t is the probability assigned to the true class. The factor (1 − p_t)^γ down-weights easy, confidently classified examples, so the abundant licit nodes contribute less. The code also offers class-weighted cross-entropy with weight [1, N_licit / N_illicit]. Parameters are optimised with Adam; a plateau scheduler halves the learning rate when validation ROC-AUC stalls; the checkpoint with the best validation ROC-AUC is restored; and the predicted probability of the illicit class is thresholded at 0.5.
+
+P[257]: 10.6  Related architectures discussed but not implemented
+
+P[258]: The following were not implemented in the project and are discussed only as related work: Chebyshev spectral convolutions, which approximate spectral filters with Chebyshev polynomials and reached the best published Elliptic result [2]; GATv2, which reorders the attention computation [2]; skip connections and a final linear layer, shown to improve several architectures [2]; heterogeneous message passing [N3]; line-graph views [N4]; and self-supervised pre-training [N2]. No experimental comparison with these is claimed.
+
+P[259]: 11  Implementation and Experimental Setup
+
+P[260]: Table 7. Training configuration (from engine.py defaults and run_experiments.py)
+
+P[261]: 
+
+P[262]: Table 8. Software and hardware
+
+P[263]: 
+
+P[264]: 12  Evaluation Metrics
+
+P[265]: With TP, FP, TN, FN denoting true positives, false positives, true negatives and false negatives for the illicit class:
+
+P[266]: Precision = TP / (TP + FP),   Recall = TP / (TP + FN)        (8)
+
+P[267]: F1 = 2 · Precision · Recall / (Precision + Recall),   Accuracy = (TP + TN) / (TP + TN + FP + FN)        (9)
+
+P[268]: Precision is the share of flagged nodes that are truly illicit and measures investigation efficiency; recall is the share of illicit nodes that are found and measures missed risk; F1 is their harmonic mean. The confusion matrix lists TP, FP, FN and TN. ROC-AUC is the area under the curve of true-positive rate against false-positive rate, independent of threshold; PR-AUC (average precision) is the area under the precision–recall curve and is more informative when positives are rare. All of these are computed in the engine. Metrics are computed for the illicit class only.
+
+P[269]: Why accuracy misleads here. In the full SAML-D data 99.896% of transactions are normal, so a classifier that never raises an alert has 99.9% accuracy and zero recall. Similar warnings appear in the AML literature [2]. Accuracy is therefore not used for model selection. ROC-AUC can also look flattering under extreme imbalance because the false-positive rate is divided by a huge number of negatives; precision, recall, F1 and PR-AUC should be read together.
+
+P[270]: Table 9. Metrics used
+
+P[271]: 
+
+P[272]: 13  Results
+
+P[273]: Status of results. The experiments are defined and the code to run them is supplied (Appendix B), but at the time of writing no run outputs from the project exist in the submitted files. Every cell below marked [TO BE FILLED] must be filled from the JSON/Markdown output of `run_experiments.py`. No value has been estimated or copied from elsewhere into these tables.
+
+P[274]: 13.1  SAML-D results
+
+P[275]: Table 10. SAML-D, clean configuration (13 features; mean ± std over seeds; test split)
+
+P[276]: 
+
+P[277]: Table 11. SAML-D, legacy configuration (15 features incl. neighbour-label leakage and noise)
+
+P[278]: 
+
+P[279]: Experiment setup to record alongside Tables 10–11: number of nodes [TO BE FILLED], number of edges [TO BE FILLED], number of illicit nodes [TO BE FILLED], test-set size [TO BE FILLED] (printed by the script).
+
+P[280]: [FIGURE TO BE INSERTED] Fig. 9. Confusion matrices of the implemented models (SAML-D and Elliptic), from the script output (summed or per-seed counts are saved in the results JSON).
+
+P[281]: 13.2  Elliptic results
+
+P[282]: Table 12. Elliptic, all features (165), test time steps 35–49, illicit class
+
+P[283]: 
+
+P[284]: Table 13. Elliptic, local features only (93)
+
+P[285]: 
+
+P[286]: 13.3  Published reference values for Elliptic (context only)
+
+P[287]: Table 14 reproduces selected figures from Ferretti et al. [2] as context. They were obtained with a different implementation (PyTorch Geometric layers, 13,000-epoch training with early stopping, hidden size 110 for the larger feature sets, 15 repetitions), under that paper's own split, and are not results of this project; they must not be placed in the same table as, or compared directly with, the project's numbers without stating these differences.
+
+P[288]: Table 14. Selected results reported in [2] (illicit class; mean values)
+
+P[289]: 
+
+P[290]: 14  Results Discussion
+
+P[291]: Because the project's own numbers are not yet available, this section states how they should be interpreted rather than what they are. Once Tables 10–13 are filled, the following checks should be made and the text revised to match the actual values.
+
+P[292]: Leakage check. Compare Tables 10 and 11. If the legacy configuration scores much higher than the clean one, the difference is attributable to feature 13 (neighbour labels) and not to graph learning.
+
+P[293]: Graph versus feature-only. Compare each GNN with the MLP on the clean configuration. A small or negative difference would indicate that engineered node features already capture most of the signal, which is consistent with what [2] report for Elliptic, where removing the original features and keeping only structure gave very poor results.
+
+P[294]: Imbalance. The sampled SAML-D graph is about 25% illicit by construction, not 0.1%; precision on this graph will overstate precision in a realistic setting, in which the same false-positive rate produces many more false alarms per true case. The Elliptic test set contains the true labelled imbalance and is the more realistic of the two.
+
+P[295]: False positives and false negatives. In AML a false negative is a missed laundering case and a false positive is an alert that consumes investigator time. The confusion matrices in Fig. 9 should be discussed in these terms, and the threshold of 0.5 revisited, since in practice thresholds are set from available investigation capacity.
+
+P[296]: Temporal drift (Elliptic). Results should be broken down by time step; the literature reports a sharp performance drop after the dark-market shutdown around step 43 [2], [N2].
+
+P[297]: For orientation, other supplied papers report very different operating points on different data: a real-bank study reports precision of 67% at 1% recall and PR-AUC of 0.18 [N3], and a preprint on a large synthetic AML dataset reports recall of 0.93 with precision of 0.02 [N8]. These illustrate that high recall with very low precision, or the reverse, is common in AML, and that good-looking headline numbers need context.
+
+P[298]: Nothing in this paper demonstrates that the models are suitable for deployment in a bank.
+
+P[299]: 15  Comparative Discussion
+
+P[300]: Table 15. Qualitative comparison of approaches (no universal winner is claimed)
+
+P[301]: 
+
+P[302]: Published evidence is mixed: on Elliptic, random forest outperformed a plain GCN in the dataset's original paper [N1], whereas newer graph architectures with extra layers and skip connections surpassed earlier GCN results [2]. The comparison therefore depends on architecture, features and protocol, not just on whether a graph is used.
+
+P[303]: 16  Ethical, Privacy and Security Considerations
+
+P[304]: Financial privacy and data handling. Transaction data reveal income, relationships and behaviour. Real AML data is therefore rarely shareable, a point made by [1] and visible in the real-bank study [N3]; this is why synthetic or pseudonymous data is used here. Even pseudonymous graphs can sometimes be re-identified, so access control, anonymisation, minimisation and secure storage are needed in any real use, and privacy-preserving training approaches such as distributed learning without raw-data pooling [16] deserve attention.
+
+P[305]: False positives and false negatives. A false positive can freeze an innocent customer's account or damage their standing; a false negative lets crime continue. The costs are asymmetric and should be set with compliance experts, not by a default threshold.
+
+P[306]: Bias and fairness. Features such as location and currency can act as proxies for nationality or ethnicity. The SAML-D labels are generated by a simulator and encode the designers' assumptions about high-risk countries; models trained on them inherit those assumptions [1]. Any use on real customers would require bias auditing.
+
+P[307]: Explainability and regulation. Institutions need to justify why an account was flagged. GNNs are hard to interpret [2], [3]; the project's attention-based and heuristic explanations are illustrative only, and flagged cases must stay under human review. The project's report generator, which labels accounts for "account freeze", is a demonstration and must not be used as an automated decision tool.
+
+P[308]: 17  Limitations
+
+P[309]: Table 16. Limitations of the study
+
+P[310]: 
+
+P[311]: 18  Future Scope
+
+P[312]: Table 17. Future work (not completed in this study)
+
+P[313]: 
+
+P[314]: 19  Conclusion
+
+P[315]: This paper described a graph-based approach to anti-money laundering built around two datasets: SAML-D, a synthetic bank-style dataset of 9.5 million transactions of which only 0.104% are laundering, and the Elliptic Bitcoin benchmark. The project converts the SAML-D table into a directed account graph through stratified streaming, engineers node features, and trains GCN, GAT, GraphSAGE and MLP classifiers with a focal loss; it also supplies a temporal protocol for Elliptic. The analysis of the data shows that laundering is rare, that cash and cross-border channels carry markedly higher laundering rates, that raw columns have almost no linear correlation with the label, and that many legitimate behaviours deliberately mimic laundering structure.
+
+P[316]: The audit of the implementation identified three points that determine how results can be read: node labels inherited from edge labels, sampling that raises the illicit share to about a quarter, and a neighbour-label feature that leaks ground truth. Performance values for the project's own runs are [TO BE FILLED] and must be generated with the supplied script before the discussion in Section 14 is finalised. Published IEEE results suggest that architecture choice, feature set and evaluation protocol matter as much as the use of a graph [2]. The study is a learning-oriented exploration; it does not show that the models are ready for use in a financial institution.
+
+P[317]: Acknowledgements
+
+P[318]: The authors thank their project guide, Mrs. Jyothsna Datti, Assistant Professor, Department of Computer Science and Engineering, for guidance throughout this work, and the Department of CSE and Koneru Lakshmaiah Education Foundation for academic and infrastructural support. The authors also acknowledge the creators of the SAML-D and Elliptic datasets for making them available for research.
+
+P[319]: Declaration
+
+P[320]: We declare that this paper was prepared for academic purposes as part of the B.Tech Machine Learning project of the Department of Computer Science and Engineering, and that the sources used have been acknowledged in the text and the reference list. Experimental values that have not yet been produced are marked [TO BE FILLED] and have not been estimated.
+
+P[321]: Godavarthi Venkata Madhav (2520030568)        G. Vaishnavi Reddy (2520030247)        K. Richie Kiran (2520030498)
+
+P[322]: References
+
+P[323]: [1]  B. Oztas, D. Cetinkaya, F. Adedoyin, M. Budka, H. Dogan, and G. Aksu, “Enhancing anti-money laundering: Development of a synthetic transaction monitoring dataset,” in Proc. IEEE Int. Conf. e-Business Eng. (ICEBE), Sydney, Australia, 2023, pp. 47–54, doi: 10.1109/ICEBE59045.2023.00028.
+
+P[324]: [2]  S. Ferretti, G. D’Angelo, and V. Ghini, “Enhancing anti-money laundering frameworks: An application of graph neural networks in cryptocurrency transaction classification,” IEEE Access, vol. 13, pp. 50201–50215, 2025, doi: 10.1109/ACCESS.2025.3552240.
+

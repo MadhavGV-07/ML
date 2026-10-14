@@ -1,0 +1,952 @@
+{
+  "tables": [
+    {
+      "table_idx": 0,
+      "rows": [
+        [
+          "Ref.",
+          "Year / venue",
+          "Topic and method",
+          "Data",
+          "Key point",
+          "Relevance / limitation"
+        ],
+        [
+          "[1]",
+          "2023, IEEE ICEBE",
+          "Synthetic AML transaction generator",
+          "SAML-D (12 features, 28 typologies)",
+          "Adds typologies, locations, high-risk countries and payment types",
+          "Source of our primary dataset; synthetic"
+        ],
+        [
+          "[2]",
+          "2025, IEEE Access",
+          "GCN, GAT, GATv2, SAGE, Chebyshev; Lin and skip variants",
+          "Elliptic",
+          "Chebyshev+Lin F1 0.906; GCN weakest; dataset opacity noted",
+          "Benchmark protocol for Elliptic; Bitcoin only"
+        ],
+        [
+          "[3]",
+          "2021, IEEE Access",
+          "Critical review: deep learning and XAI for AML",
+          "Literature",
+          "Future work: XAI, graph DL, label-scarcity methods",
+          "Motivates explainability and graph methods; review only"
+        ],
+        [
+          "[4]",
+          "2021, IEEE TNNLS",
+          "Survey and taxonomy of GNNs",
+          "Literature",
+          "Four GNN families",
+          "Theory background; not AML-specific"
+        ],
+        [
+          "[5]",
+          "2009, IEEE TNN",
+          "Early graph neural network model",
+          "Graph benchmarks",
+          "Origin of GNN idea",
+          "Historical; not AML"
+        ],
+        [
+          "[7]",
+          "2024, IEEE CCNC",
+          "Comparative study of GNNs for AML",
+          "Elliptic",
+          "Compares GNN architectures",
+          "Precursor of [2]; Bitcoin only"
+        ],
+        [
+          "[9]",
+          "2017, IEEE CBD",
+          "Community detection for AML on Spark",
+          "Large transaction networks",
+          "Scalable network analysis",
+          "Not a neural method"
+        ],
+        [
+          "[10]",
+          "2019, IEEE ICMLA",
+          "Embedding graphs of financial transactions",
+          "Transaction graphs",
+          "Graph embeddings for finance",
+          "Embedding rather than end-to-end GNN"
+        ],
+        [
+          "[17]",
+          "2022, IEEE TSMC",
+          "Ethereum phishing detection via network embedding",
+          "Ethereum",
+          "Network embeddings detect phishers",
+          "Crypto domain; account-level"
+        ],
+        [
+          "[18]",
+          "2024, IEEE TNNLS",
+          "Learning with propagated edge features",
+          "Graph benchmarks",
+          "Edge features improve node embeddings",
+          "Not AML-specific"
+        ]
+      ]
+    },
+    {
+      "table_idx": 1,
+      "rows": [
+        [
+          "Property",
+          "Value"
+        ],
+        [
+          "Source",
+          "Oztas et al., IEEE ICEBE 2023 [1]; synthetic"
+        ],
+        [
+          "Records (transactions)",
+          "9,504,852"
+        ],
+        [
+          "Columns",
+          "12: Time, Date, Sender_account, Receiver_account, Amount, Payment_currency, Received_currency, Sender_bank_location, Receiver_bank_location, Payment_type, Is_laundering, Laundering_type"
+        ],
+        [
+          "Target",
+          "Is_laundering (transaction level); Laundering_type (28 behaviour types)"
+        ],
+        [
+          "Class distribution",
+          "9,494,979 normal (99.896%); 9,873 laundering (0.104%)"
+        ],
+        [
+          "Behaviour types",
+          "28 (11 normal, 17 laundering)"
+        ],
+        [
+          "Missing values / duplicate rows / self-loops",
+          "0 / 0 / 0"
+        ],
+        [
+          "Distinct accounts",
+          "855,460 (292,715 senders; 652,266 receivers)"
+        ],
+        [
+          "Distinct sender\u2013receiver pairs",
+          "887,497"
+        ],
+        [
+          "Accounts touching \u22651 laundering transaction",
+          "7,902 (0.92% of accounts)"
+        ],
+        [
+          "Period",
+          "2022-10-07 to 2023-08-23 (321 distinct dates)"
+        ],
+        [
+          "Payment types / currencies / countries",
+          "7 / 13 / 18"
+        ],
+        [
+          "Cross-border transactions",
+          "9.83% of all; 30.84% of laundering transactions"
+        ],
+        [
+          "Amount (normal)",
+          "mean 8,729.88; median 6,114.63; max 999,962.19"
+        ],
+        [
+          "Amount (laundering)",
+          "mean 40,587.67; median 5,322.79; max 12,618,498.40"
+        ]
+      ]
+    },
+    {
+      "table_idx": 2,
+      "rows": [
+        [
+          "Payment type",
+          "Transactions",
+          "Laundering",
+          "Rate (%)"
+        ],
+        [
+          "Cash Deposit",
+          "225,206",
+          "1,405",
+          "0.624"
+        ],
+        [
+          "Cash Withdrawal",
+          "300,477",
+          "1,334",
+          "0.444"
+        ],
+        [
+          "Cross-border",
+          "933,931",
+          "2,628",
+          "0.281"
+        ],
+        [
+          "ACH",
+          "2,008,807",
+          "1,159",
+          "0.058"
+        ],
+        [
+          "Credit card",
+          "2,012,909",
+          "1,136",
+          "0.056"
+        ],
+        [
+          "Debit card",
+          "2,012,103",
+          "1,124",
+          "0.056"
+        ],
+        [
+          "Cheque",
+          "2,011,419",
+          "1,087",
+          "0.054"
+        ]
+      ]
+    },
+    {
+      "table_idx": 3,
+      "rows": [
+        [
+          "Property",
+          "Value",
+          "Source"
+        ],
+        [
+          "Transactions (nodes)",
+          "203,769",
+          "Student file; matches [2]"
+        ],
+        [
+          "Columns in student feature file",
+          "167: transaction id, time step, 165 anonymised features (no header)",
+          "Student file"
+        ],
+        [
+          "Time steps",
+          "49 (1 to 49); 1,089 to 7,880 nodes per step; mean 4,158.6",
+          "Student file"
+        ],
+        [
+          "Missing values; id uniqueness",
+          "0; all ids unique",
+          "Student file"
+        ],
+        [
+          "Feature scaling",
+          "Already standardised (column means \u2248 0, standard deviations \u2248 1)",
+          "Student file"
+        ],
+        [
+          "Edges",
+          "234,355 (directed)",
+          "[2]"
+        ],
+        [
+          "Labels (illicit / licit / unknown)",
+          "4,545 / 42,019 / remainder unlabelled",
+          "[2]; class file not in archive"
+        ],
+        [
+          "Feature groups",
+          "Local transaction features and aggregated one-hop neighbour features",
+          "[2]"
+        ]
+      ]
+    },
+    {
+      "table_idx": 4,
+      "rows": [
+        [
+          "Idx",
+          "Feature",
+          "Definition"
+        ],
+        [
+          "0\u20131",
+          "Total inflow / outflow",
+          "Sum of received / sent amounts, divided by 10^6"
+        ],
+        [
+          "2\u20133",
+          "In-degree / out-degree",
+          "Edge counts divided by number of nodes"
+        ],
+        [
+          "4",
+          "Betweenness centrality",
+          "NetworkX (approximate with k \u2264 80 if N > 300)"
+        ],
+        [
+          "5",
+          "PageRank",
+          "NetworkX, damping 0.85"
+        ],
+        [
+          "6\u20138",
+          "Currency / location / payment-type diversity",
+          "Distinct values at the node divided by global distinct values"
+        ],
+        [
+          "9\u201310",
+          "Mean and max inflow amount",
+          "Divided by 10^5"
+        ],
+        [
+          "11",
+          "Log volume",
+          "log(1 + inflow + outflow) / 20"
+        ],
+        [
+          "12",
+          "Inflow/outflow ratio",
+          "min(in/(out+\u03b5), 10) / 10"
+        ],
+        [
+          "13",
+          "Illicit-neighbour fraction",
+          "Uses ground-truth labels of neighbours (leakage \u2014 see 8.3)"
+        ],
+        [
+          "14",
+          "Random value",
+          "random.uniform(0.1, 1.0) (noise \u2014 see 8.3)"
+        ]
+      ]
+    },
+    {
+      "table_idx": 5,
+      "rows": [
+        [
+          "Model",
+          "Structure",
+          "Notes"
+        ],
+        [
+          "GCN",
+          "2 graph-convolution layers (F\u219264\u219232), batch norm, ReLU, dropout; linear classifier",
+          "Uses normalised adjacency \u00c2"
+        ],
+        [
+          "GAT",
+          "2 attention layers (F\u219264 with ELU, 64\u219232), one head, LeakyReLU(0.2) scores, masked softmax, attention dropout; linear classifier",
+          "Attention matrix cached for explanation"
+        ],
+        [
+          "GraphSAGE",
+          "2 layers with mean aggregation over neighbours, concatenation with self features, ReLU, L2 normalisation (F\u219264\u219232); linear classifier",
+          "Full-neighbour mean, no sampling"
+        ],
+        [
+          "Baseline MLP",
+          "Linear\u2013BatchNorm\u2013ReLU\u2013Dropout \u00d72 (F\u219264\u219232), linear classifier",
+          "Ignores the graph"
+        ]
+      ]
+    },
+    {
+      "table_idx": 6,
+      "rows": [
+        [
+          "Setting",
+          "SAML-D",
+          "Elliptic"
+        ],
+        [
+          "Split",
+          "Stratified 70 / 15 / 15 on nodes",
+          "Time steps 1\u201329 / 30\u201334 / 35\u201349"
+        ],
+        [
+          "Epochs (max)",
+          "100 (engine default 120)",
+          "60"
+        ],
+        [
+          "Optimiser",
+          "Adam, lr 0.015, weight decay 5e-4",
+          "Adam, lr 0.005, weight decay 5e-4"
+        ],
+        [
+          "Scheduler",
+          "ReduceLROnPlateau (factor 0.5, patience 15, on validation AUC)",
+          "None"
+        ],
+        [
+          "Hidden dimensions",
+          "64 \u2192 32",
+          "64 \u2192 32"
+        ],
+        [
+          "Dropout",
+          "0.25",
+          "0.25"
+        ],
+        [
+          "Loss",
+          "Focal (\u03b1 = 0.75, \u03b3 = 2)",
+          "Focal (\u03b1 = 0.75, \u03b3 = 2)"
+        ],
+        [
+          "Batching",
+          "Full batch (whole graph)",
+          "One optimiser step per training time step"
+        ],
+        [
+          "Checkpoint selection",
+          "Best validation ROC-AUC",
+          "Best validation PR-AUC"
+        ],
+        [
+          "Decision threshold",
+          "0.5",
+          "0.5"
+        ],
+        [
+          "Seeds",
+          "5 [TO BE FILLED if changed]",
+          "3 [TO BE FILLED if changed]"
+        ]
+      ]
+    },
+    {
+      "table_idx": 7,
+      "rows": [
+        [
+          "Component",
+          "Technology"
+        ],
+        [
+          "Language",
+          "Python 3.x (exact version [TO BE FILLED])"
+        ],
+        [
+          "Deep-learning framework",
+          "PyTorch (>= 2.0 in requirements.txt); custom dense GCN, GAT, GraphSAGE and MLP layers"
+        ],
+        [
+          "Graph processing",
+          "NetworkX (>= 3.0): graph construction, centralities, PageRank"
+        ],
+        [
+          "Data processing / metrics",
+          "NumPy, scikit-learn (splits, ROC-AUC, average precision, precision/recall/F1, confusion matrix)"
+        ],
+        [
+          "EDA and visualisation",
+          "pandas, seaborn, matplotlib in Google Colab (EDA notebook)"
+        ],
+        [
+          "Web application",
+          "Flask REST API with HTML/JavaScript front end"
+        ],
+        [
+          "Not used in the code",
+          "PyTorch Geometric (listed in the project abstract but absent from the code)"
+        ],
+        [
+          "Hardware",
+          "CPU/GPU model, RAM [TO BE FILLED]; engine selects CUDA automatically if available"
+        ],
+        [
+          "Operating system",
+          "[TO BE FILLED]"
+        ]
+      ]
+    },
+    {
+      "table_idx": 8,
+      "rows": [
+        [
+          "Metric",
+          "Computed in project?",
+          "Role"
+        ],
+        [
+          "Precision, recall, F1 (illicit)",
+          "Yes",
+          "Primary threshold-dependent metrics"
+        ],
+        [
+          "Confusion matrix",
+          "Yes",
+          "Counts of alerts and misses"
+        ],
+        [
+          "ROC-AUC",
+          "Yes",
+          "Threshold-independent ranking; validation selection (SAML-D)"
+        ],
+        [
+          "PR-AUC (average precision)",
+          "Yes",
+          "Imbalance-sensitive ranking; validation selection (Elliptic)"
+        ],
+        [
+          "Accuracy",
+          "No (explained only)",
+          "Not informative for this problem"
+        ]
+      ]
+    },
+    {
+      "table_idx": 9,
+      "rows": [
+        [
+          "Model",
+          "Precision",
+          "Recall",
+          "F1 (illicit)",
+          "ROC-AUC",
+          "PR-AUC"
+        ],
+        [
+          "GCN",
+          "[TO BE FILLED]",
+          "[TO BE FILLED]",
+          "[TO BE FILLED]",
+          "[TO BE FILLED]",
+          "[TO BE FILLED]"
+        ],
+        [
+          "GAT",
+          "[TO BE FILLED]",
+          "[TO BE FILLED]",
+          "[TO BE FILLED]",
+          "[TO BE FILLED]",
+          "[TO BE FILLED]"
+        ],
+        [
+          "GraphSAGE",
+          "[TO BE FILLED]",
+          "[TO BE FILLED]",
+          "[TO BE FILLED]",
+          "[TO BE FILLED]",
+          "[TO BE FILLED]"
+        ],
+        [
+          "Baseline MLP",
+          "[TO BE FILLED]",
+          "[TO BE FILLED]",
+          "[TO BE FILLED]",
+          "[TO BE FILLED]",
+          "[TO BE FILLED]"
+        ]
+      ]
+    },
+    {
+      "table_idx": 10,
+      "rows": [
+        [
+          "Model",
+          "Precision",
+          "Recall",
+          "F1 (illicit)",
+          "ROC-AUC",
+          "PR-AUC"
+        ],
+        [
+          "GCN",
+          "[TO BE FILLED]",
+          "[TO BE FILLED]",
+          "[TO BE FILLED]",
+          "[TO BE FILLED]",
+          "[TO BE FILLED]"
+        ],
+        [
+          "GAT",
+          "[TO BE FILLED]",
+          "[TO BE FILLED]",
+          "[TO BE FILLED]",
+          "[TO BE FILLED]",
+          "[TO BE FILLED]"
+        ],
+        [
+          "GraphSAGE",
+          "[TO BE FILLED]",
+          "[TO BE FILLED]",
+          "[TO BE FILLED]",
+          "[TO BE FILLED]",
+          "[TO BE FILLED]"
+        ],
+        [
+          "Baseline MLP",
+          "[TO BE FILLED]",
+          "[TO BE FILLED]",
+          "[TO BE FILLED]",
+          "[TO BE FILLED]",
+          "[TO BE FILLED]"
+        ]
+      ]
+    },
+    {
+      "table_idx": 11,
+      "rows": [
+        [
+          "Model",
+          "Precision",
+          "Recall",
+          "F1 (illicit)",
+          "ROC-AUC",
+          "PR-AUC"
+        ],
+        [
+          "GCN",
+          "[TO BE FILLED]",
+          "[TO BE FILLED]",
+          "[TO BE FILLED]",
+          "[TO BE FILLED]",
+          "[TO BE FILLED]"
+        ],
+        [
+          "GAT",
+          "[TO BE FILLED]",
+          "[TO BE FILLED]",
+          "[TO BE FILLED]",
+          "[TO BE FILLED]",
+          "[TO BE FILLED]"
+        ],
+        [
+          "GraphSAGE",
+          "[TO BE FILLED]",
+          "[TO BE FILLED]",
+          "[TO BE FILLED]",
+          "[TO BE FILLED]",
+          "[TO BE FILLED]"
+        ],
+        [
+          "Baseline MLP",
+          "[TO BE FILLED]",
+          "[TO BE FILLED]",
+          "[TO BE FILLED]",
+          "[TO BE FILLED]",
+          "[TO BE FILLED]"
+        ]
+      ]
+    },
+    {
+      "table_idx": 12,
+      "rows": [
+        [
+          "Model",
+          "Precision",
+          "Recall",
+          "F1 (illicit)",
+          "ROC-AUC",
+          "PR-AUC"
+        ],
+        [
+          "GCN",
+          "[TO BE FILLED]",
+          "[TO BE FILLED]",
+          "[TO BE FILLED]",
+          "[TO BE FILLED]",
+          "[TO BE FILLED]"
+        ],
+        [
+          "GAT",
+          "[TO BE FILLED]",
+          "[TO BE FILLED]",
+          "[TO BE FILLED]",
+          "[TO BE FILLED]",
+          "[TO BE FILLED]"
+        ],
+        [
+          "GraphSAGE",
+          "[TO BE FILLED]",
+          "[TO BE FILLED]",
+          "[TO BE FILLED]",
+          "[TO BE FILLED]",
+          "[TO BE FILLED]"
+        ],
+        [
+          "Baseline MLP",
+          "[TO BE FILLED]",
+          "[TO BE FILLED]",
+          "[TO BE FILLED]",
+          "[TO BE FILLED]",
+          "[TO BE FILLED]"
+        ]
+      ]
+    },
+    {
+      "table_idx": 13,
+      "rows": [
+        [
+          "Model and configuration in [2]",
+          "Precision",
+          "Recall",
+          "F1"
+        ],
+        [
+          "GCN (tx+agg)",
+          "0.800",
+          "0.496",
+          "0.612"
+        ],
+        [
+          "GAT (tx+agg)",
+          "0.844",
+          "0.727",
+          "0.781"
+        ],
+        [
+          "GraphSAGE (tx+agg)",
+          "0.935",
+          "0.818",
+          "0.873"
+        ],
+        [
+          "GATv2 (tx+agg)",
+          "0.934",
+          "0.842",
+          "0.886"
+        ],
+        [
+          "Chebyshev+Lin (tx+agg_red)",
+          "0.955",
+          "0.863",
+          "0.906"
+        ]
+      ]
+    },
+    {
+      "table_idx": 14,
+      "rows": [
+        [
+          "Aspect",
+          "Rule-based",
+          "Traditional ML / tree ensembles",
+          "Deep learning on tables",
+          "GNNs"
+        ],
+        [
+          "Data needs",
+          "Expert knowledge; no labels",
+          "Labelled examples",
+          "Many labelled examples",
+          "Labelled nodes plus graph; graph construction effort"
+        ],
+        [
+          "Interpretability",
+          "High",
+          "Moderate (feature importance)",
+          "Low",
+          "Low to moderate (attention, subgraph explainers)"
+        ],
+        [
+          "Relationship modelling",
+          "Manual, per rule",
+          "Only through hand-built graph features",
+          "Only through features",
+          "Learned from neighbourhood"
+        ],
+        [
+          "Compute / scalability",
+          "Cheap",
+          "Cheap to moderate",
+          "Moderate",
+          "Higher; dense adjacency does not scale, sampling or sparse ops needed"
+        ],
+        [
+          "Class imbalance",
+          "Not learned",
+          "Weights, resampling",
+          "Weights, focal loss",
+          "Weights, focal loss, neighbour sampling"
+        ],
+        [
+          "Typical use",
+          "Baseline compliance",
+          "Alert scoring",
+          "Alert scoring",
+          "Network-aware scoring, ring detection"
+        ]
+      ]
+    },
+    {
+      "table_idx": 15,
+      "rows": [
+        [
+          "Limitation",
+          "Effect"
+        ],
+        [
+          "SAML-D is synthetic [1]",
+          "Results do not transfer automatically to real bank data"
+        ],
+        [
+          "Sampling to about 25% illicit",
+          "Precision is optimistic; different from true 0.1% imbalance"
+        ],
+        [
+          "Node labels derived from edge labels",
+          "Counterparties of launderers are labelled illicit; label noise at node level"
+        ],
+        [
+          "Feature leakage in the original feature set (feature 13) and a random feature (14)",
+          "Legacy results are inflated; clean configuration needed"
+        ],
+        [
+          "Collapsed multi-edges in DiGraph",
+          "Repeated transfers between the same accounts are not counted; amounts of earlier transfers are overwritten"
+        ],
+        [
+          "Static graph; time stored only as attribute",
+          "Temporal laundering patterns are not modelled"
+        ],
+        [
+          "Dense N\u00d7N adjacency",
+          "Limits graph size to a few thousand nodes per pass"
+        ],
+        [
+          "Directed adjacency read as out-neighbours",
+          "Aggregation direction may not match the intended flow semantics"
+        ],
+        [
+          "MLP baseline receives graph-derived features",
+          "Understates the advantage of message passing"
+        ],
+        [
+          "EDA run on the first 200,000 rows only",
+          "Covers 7 days; not representative of the 11-month period"
+        ],
+        [
+          "Elliptic edge list and labels not in the archive",
+          "Elliptic experiments cannot be reproduced until those files are added"
+        ],
+        [
+          "Elliptic features are anonymised [2]",
+          "No semantic feature analysis or meaningful explanation"
+        ],
+        [
+          "Hardware, Python version and seeds [TO BE FILLED]",
+          "Reproducibility details incomplete"
+        ]
+      ]
+    },
+    {
+      "table_idx": 16,
+      "rows": [
+        [
+          "Direction",
+          "Rationale"
+        ],
+        [
+          "Chebyshev convolutions, GATv2, skip connections and a final linear layer",
+          "Gave the best published Elliptic results [2]"
+        ],
+        [
+          "Neighbour sampling and sparse message passing",
+          "Scale to the whole SAML-D graph instead of a sample"
+        ],
+        [
+          "Edge-feature and edge-level models",
+          "Classify transactions directly and use amounts and times on edges [18]"
+        ],
+        [
+          "Temporal and dynamic GNNs",
+          "Model evolution of laundering over time"
+        ],
+        [
+          "Explainable GNNs (subgraph explainers, SHAP-style attributions)",
+          "Support analyst review [3]"
+        ],
+        [
+          "Self-supervised pre-training",
+          "Use unlabelled nodes under label scarcity [3], [N2]"
+        ],
+        [
+          "Privacy-preserving and federated training",
+          "Allow multi-institution learning without sharing data [16]"
+        ],
+        [
+          "Evaluation on additional datasets and real data",
+          "Test generalisation beyond synthetic and Bitcoin data"
+        ],
+        [
+          "Cost-sensitive thresholding",
+          "Set decision threshold from investigation capacity"
+        ]
+      ]
+    },
+    {
+      "table_idx": 17,
+      "rows": [
+        [
+          "File",
+          "Role"
+        ],
+        [
+          "SAML-D.csv",
+          "Primary dataset (9,504,852 rows)"
+        ],
+        [
+          "app.py",
+          "CSV streaming, graph and feature construction (build_dataset_from_stream), Flask API"
+        ],
+        [
+          "engine.py",
+          "Tensor preparation, split, training loop, evaluation, XAI, report generation"
+        ],
+        [
+          "gnn_models.py",
+          "GCN, GAT, GraphSAGE, MLP, FocalLoss"
+        ],
+        [
+          "aml_generator.py",
+          "Synthetic generator used for a 260-node demo graph (not the research dataset)"
+        ],
+        [
+          "test_aml_gnn.py",
+          "Unit tests (shape checks and endpoint smoke tests)"
+        ],
+        [
+          "uploads/current_upload.csv",
+          "Elliptic feature file only (203,769 \u00d7 167); edge list and classes missing"
+        ],
+        [
+          "EDA_SAML_DATASET.ipynb",
+          "Exploratory analysis of first 200,000 rows"
+        ],
+        [
+          "run_experiments.py (new)",
+          "Runs the four models on SAML-D (clean / legacy) and on Elliptic (temporal split) and writes results JSON"
+        ]
+      ]
+    }
+  ],
+  "placeholders": [
+    {
+      "p_idx": 28,
+      "text": "Experimental performance values for the project's own runs are [TO BE FILLED]. The paper also documents limitations that affect how results must be read: node labels are derived from edge labels, sampling raises the illicit share far above its true rate, and an early version of the feature set contained a neighbour-label feature that leaks ground truth and a random-noise feature. The study is an undergraduate exploration and makes no claim of deployment readiness."
+    },
+    {
+      "p_idx": 273,
+      "text": "Status of results. The experiments are defined and the code to run them is supplied (Appendix B), but at the time of writing no run outputs from the project exist in the submitted files. Every cell below marked [TO BE FILLED] must be filled from the JSON/Markdown output of `run_experiments.py`. No value has been estimated or copied from elsewhere into these tables."
+    },
+    {
+      "p_idx": 279,
+      "text": "Experiment setup to record alongside Tables 10\u201311: number of nodes [TO BE FILLED], number of edges [TO BE FILLED], number of illicit nodes [TO BE FILLED], test-set size [TO BE FILLED] (printed by the script)."
+    },
+    {
+      "p_idx": 316,
+      "text": "The audit of the implementation identified three points that determine how results can be read: node labels inherited from edge labels, sampling that raises the illicit share to about a quarter, and a neighbour-label feature that leaks ground truth. Performance values for the project's own runs are [TO BE FILLED] and must be generated with the supplied script before the discussion in Section 14 is finalised. Published IEEE results suggest that architecture choice, feature set and evaluation protocol matter as much as the use of a graph [2]. The study is a learning-oriented exploration; it does not show that the models are ready for use in a financial institution."
+    },
+    {
+      "p_idx": 320,
+      "text": "We declare that this paper was prepared for academic purposes as part of the B.Tech Machine Learning project of the Department of Computer Science and Engineering, and that the sources used have been acknowledged in the text and the reference list. Experimental values that have not yet been produced are marked [TO BE FILLED] and have not been estimated."
+    }
+  ]
+}

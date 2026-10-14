@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SPECTRA // Graph Neural Network Anti-Money Laundering Platform</title>
+  
+  <!-- Modern Fonts: Outfit, Inter & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Vis.js Network for Force-Directed Interactive Graph -->
+  <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+  
+  <!-- Chart.js for Training Loss & ROC-AUC Curves -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body class="dark-theme">
+  <!-- Top Command Bar -->
+  <header class="top-nav">
+    <div class="brand-container">
+      <div class="brand-logo">
+        <i class="fa-solid fa-diagram-project"></i>
+      </div>
+      <div class="brand-text">
+        <div class="brand-title">SPECTRA <span class="brand-sub">AML // GNN</span></div>
+        <div class="brand-tagline">Graph Neural Network Financial Crime Intelligence</div>
+      </div>
+      <div class="status-indicator">
+        <span class="pulse-dot"></span>
+        <span class="status-text" id="systemStatus">ENGINE READY</span>
+      </div>
+    </div>
+
+    <!-- Live KPI Counters -->
+    <div class="kpi-strip">
+      <div class="kpi-card">
+        <div class="kpi-label"><i class="fa-solid fa-users"></i> ACCOUNTS</div>
+        <div class="kpi-value" id="kpiAccounts">260</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label"><i class="fa-solid fa-money-bill-transfer"></i> TRANSACTIONS</div>
+        <div class="kpi-value" id="kpiTransactions">512</div>
+      </div>
+      <div class="kpi-card alert-kpi">
+        <div class="kpi-label"><i class="fa-solid fa-triangle-exclamation"></i> ILLICIT FLAGGED</div>
+        <div class="kpi-value alert-text" id="kpiIllicit">21</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label"><i class="fa-solid fa-shield-halved"></i> ROC-AUC</div>
+        <div class="kpi-value highlight-text" id="kpiAuc">0.964</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label"><i class="fa-solid fa-microchip"></i> ACTIVE ARCH</div>
+        <div class="kpi-value model-badge" id="kpiModel">GAT</div>
+      </div>
+    </div>
+
+    <!-- Top Action Buttons -->
+    <div class="top-actions">
+      <button class="btn btn-secondary" id="btnBenchmarkModal" title="Compare GCN, GAT, GraphSAGE & Baseline">
+        <i class="fa-solid fa-chart-simple"></i> Benchmark Arena
+      </button>
+      <button class="btn btn-secondary" id="btnExplorerModal" title="Search & Explore All Dataset Transactions">
+        <i class="fa-solid fa-list-check"></i> Transaction Ledger
+      </button>
+      <button class="btn btn-secondary" id="btnRegenGraph" title="Synthesize New Financial Network">
+        <i class="fa-solid fa-arrows-rotate"></i> New Graph
+      </button>
+      <button class="btn btn-upload-primary glow-button" id="btnUploadCsv" title="Upload Custom Dataset CSV or Load SAML-D">
+        <i class="fa-solid fa-cloud-arrow-up"></i>
+        <span>Upload Dataset</span>
+        <span class="upload-badge">CSV / SAML-D</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Grid Workspace -->
+  <main class="app-layout">
+    <!-- Left Panel: Neural Controls & Typologies -->
+    <aside class="sidebar left-panel">
+      <!-- Architecture Switcher -->
+      <div class="glass-section">
+        <div class="section-header">
+          <h3><i class="fa-solid fa-brain"></i> Neural Architecture</h3>
+          <span class="info-tag">PyTorch</span>
+        </div>
+        <div class="model-cards-grid">
+          <div class="model-card active" data-model="GAT">
+            <div class="model-card-top">
+              <span class="model-name">GAT</span>
+              <span class="badge badge-accent">Multi-Head</span>
+            </div>
+            <p class="model-desc">Graph Attention Network with dynamic edge weights for XAI explainability.</p>
+          </div>
+          <div class="model-card" data-model="GCN">
+            <div class="model-card-top">
+              <span class="model-name">GCN</span>
+              <span class="badge">Spectral</span>
+            </div>
+            <p class="model-desc">Kipf-Welling normalized graph convolution over message passing.</p>
+          </div>
+          <div class="model-card" data-model="GraphSAGE">
+            <div class="model-card-top">
+              <span class="model-name">GraphSAGE</span>
+              <span class="badge">Inductive</span>
+            </div>
+            <p class="model-desc">Sample & Aggregate neighbor pooling for generalized transaction scoring.</p>
+          </div>
+          <div class="model-card" data-model="Baseline (MLP)">
+            <div class="model-card-top">
+              <span class="model-name">Baseline MLP</span>
+              <span class="badge badge-muted">No Graph</span>
+            </div>
+            <p class="model-desc">Tabular feature classification without topological structure.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Training Hyperparameters -->
+      <div class="glass-section">
+        <div class="section-header">
+          <h3><i class="fa-solid fa-sliders"></i> Hyperparameters</h3>
+        </div>
+        
+        <div class="control-row">
+          <label>Epochs: <span id="epochsVal" class="val-badge">100</span></label>
+          <input type="range" id="epochsInput" min="20" max="250" step="10" value="100">
+        </div>
+
+        <div class="control-row">
+          <label>Learning Rate: <span id="lrVal" class="val-badge">0.015</span></label>
+          <input type="range" id="lrInput" min="0.001" max="0.050" step="0.002" value="0.015">
+        </div>
+
+        <div class="control-row">
+          <label>Loss Function</label>
+          <select id="lossTypeSelect" class="form-select">
+            <option value="focal">Focal Loss (Imbalance Aware)</option>
+            <option value="weighted_ce">Cost-Sensitive Cross Entropy</option>
+          </select>
+        </div>
+
+        <button class="btn btn-primary btn-block glow-button" id="btnTrainModel">
+          <i class="fa-solid fa-bolt"></i> Train Model
+        </button>
+      </div>
+
+      <!-- Extracted GNN Features Breakdown -->
+      <div class="glass-section features-card">
+        <div class="section-header">
+          <h3><i class="fa-solid fa-network-wired"></i> GNN Features</h3>
+          <span class="badge badge-accent">8-Dim Matrix</span>
+        </div>
+        <div class="features-list">
+          <div class="feature-item" title="Volume entering the account">
+            <span class="feat-name"><i class="fa-solid fa-arrow-down-left"></i> Inflow Volume ($)</span>
+            <span class="feat-tag feat-num">Continuous</span>
+          </div>
+          <div class="feature-item" title="Volume leaving the account">
+            <span class="feat-name"><i class="fa-solid fa-arrow-up-right"></i> Outflow Volume ($)</span>
+            <span class="feat-tag feat-num">Continuous</span>
+          </div>
+          <div class="feature-item" title="Incoming financial counterparties">
+            <span class="feat-name"><i class="fa-solid fa-hashtag"></i> In-Degree Centrality</span>
+            <span class="feat-tag feat-topo">Graph</span>
+          </div>
+          <div class="feature-item" title="Outgoing financial counterparties">
+            <span class="feat-name"><i class="fa-solid fa-hashtag"></i> Out-Degree Centrality</span>
+            <span class="feat-tag feat-topo">Graph</span>
+          </div>
+          <div class="feature-item" title="Bridge score between money mules">
+            <span class="feat-name"><i class="fa-solid fa-circle-nodes"></i> Betweenness Centrality</span>
+            <span class="feat-tag feat-topo">Graph</span>
+          </div>
+          <div class="feature-item" title="Global topological authority">
+            <span class="feat-name"><i class="fa-solid fa-crown"></i> Graph PageRank</span>
+            <span class="feat-tag feat-topo">Graph</span>
+          </div>
+          <div class="feature-item" title="Attention edge weights learned dynamically">
+            <span class="feat-name"><i class="fa-solid fa-wave-pulse"></i> GAT Neighbor Attention</span>
+            <span class="feat-tag feat-model">XAI Weight</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- AML Typology Filter -->
+      <div class="glass-section">
+        <div class="section-header">
+          <h3><i class="fa-solid fa-filter"></i> Typology Filters</h3>
+        </div>
+        <div class="filter-pills" id="typologyFilterContainer">
+          <button class="filter-btn active" data-typology="all">All Accounts</button>
+          <button class="filter-btn" data-typology="Structuring">Structuring / Smurfing</button>
+          <button class="filter-btn" data-typology="Circular">Circular Flow (Cycles)</button>
+          <button class="filter-btn" data-typology="Layering">Layering (Scatter-Gather)</button>
+          <button class="filter-btn alert-filter" data-typology="Illicit">Illicit Alerts Only</button>
+        </div>
+      </div>
+
+      <!-- Decision Threshold Tuning -->
+      <div class="glass-section">
+        <div class="section-header">
+          <h3><i class="fa-solid fa-gauge-high"></i> Decision Threshold</h3>
+          <span id="thresholdVal" class="val-badge alert-bg">0.50</span>
+        </div>
+        <input type="range" id="thresholdSlider" min="0.10" max="0.90" step="0.05" value="0.50">
+        <div class="threshold-hints">
+          <span>High Recall (Catch All)</span>
+          <span>High Precision (Fewer FP)</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Center Workspace: Interactive Force-Directed Graph -->
+    <section class="main-canvas-wrapper">
+      <!-- Floating Canvas Overlay Controls -->
+      <div class="canvas-overlay top-left-overlay">
+        <div class="legend-pill"><span class="dot dot-licit"></span> Licit Retail</div>
+        <div class="legend-pill"><span class="dot dot-commercial"></span> Commercial</div>
+        <div class="legend-pill"><span class="dot dot-exchange"></span> Exchange</div>
+        <div class="legend-pill"><span class="dot dot-illicit"></span> Flagged Laundering</div>
+        <div class="legend-pill"><span class="dot dot-selected"></span> Target Account</div>
+      </div>
+
+      <div class="canvas-overlay top-right-overlay">
+        <button class="canvas-tool-btn" id="btnZoomIn" title="Zoom In"><i class="fa-solid fa-plus"></i></button>
+        <button class="canvas-tool-btn" id="btnZoomOut" title="Zoom Out"><i class="fa-solid fa-minus"></i></button>
+        <button class="canvas-tool-btn" id="btnFitGraph" title="Fit Network View"><i class="fa-solid fa-expand"></i></button>
+        <button class="canvas-tool-btn" id="btnTogglePhysics" title="Pause / Resume Physics"><i class="fa-solid fa-atom"></i></button>
+        <button class="canvas-tool-btn" id="btnResetView" title="Clear Filters"><i class="fa-solid fa-rotate-left"></i></button>
+      </div>
+
+      <!-- Vis.js Graph Viewport -->
+      <div id="graphNetworkCanvas" class="graph-viewport"></div>
+
+      <!-- Canvas Flow Instructions Hint -->
+      <div class="canvas-hint">
+        <i class="fa-solid fa-hand-pointer"></i> Click an account to inspect dossier &amp; transactions. Click an edge arrow to inspect transaction features.
+      </div>
+    </section>
+
+    <!-- Right Panel: Forensic Dossier & Explainability -->
+    <aside class="sidebar right-panel">
+      <div class="dossier-header">
+        <div class="dossier-title">
+          <i class="fa-solid fa-folder-open"></i> Forensic Dossier
+        </div>
+        <span class="badge" id="dossierStatusBadge">NO SELECTION</span>
+      </div>
+
+      <!-- Tab Switcher (Profile vs Transactions) -->
+      <div class="dossier-tabs" id="dossierTabs" style="display:none;">
+        <button class="dossier-tab active" data-tab="profile" id="tabBtnProfile">
+          <i class="fa-solid fa-id-card"></i> Profile &amp; XAI
+        </button>
+        <button class="dossier-tab" data-tab="ledger" id="tabBtnLedger">
+          <i class="fa-solid fa-receipt"></i> Transactions (<span id="dossierTxnCount">0</span>)
+        </button>
+      </div>
+
+      <div id="dossierEmptyState" class="empty-dossier">
+        <i class="fa-solid fa-fingerprint empty-icon"></i>
+        <h4>Select an Account Node</h4>
+        <p>Inspect entity topology, GAT attention edge weights, full transaction ledger with CSV features, and generate regulatory SAR filings.</p>
+      </div>
+
+      <div id="dossierContent" class="dossier-body" style="display:none;">
+        <!-- TAB 1: Profile & XAI -->
+        <div id="dossierTabProfile" class="dossier-tab-pane">
+          <!-- Subject Account Profile -->
+          <div class="glass-section profile-card">
+            <div class="profile-header">
+              <div>
+                <h2 id="dossierAccountId">ACC-1042</h2>
+                <div class="entity-type-badge" id="dossierEntityType">Retail Account</div>
+              </div>
+              <div class="risk-meter-box">
+                <div class="risk-number" id="dossierRiskNumber">88%</div>
+                <div class="risk-sub">RISK SCORE</div>
+              </div>
+            </div>
+
+            <div class="gauge-container">
+              <div class="gauge-bar">
+                <div class="gauge-fill" id="dossierGaugeFill"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- AML Typology Diagnosis -->
+          <div class="glass-section">
+            <div class="section-header">
+              <h3><i class="fa-solid fa-shield-virus"></i> Typology Diagnosis</h3>
+            </div>
+            <div class="typology-alert-box" id="dossierTypologyAlert">
+              <div class="typology-title" id="dossierTypologyName">Structuring / Smurfing</div>
+              <div class="typology-detail" id="dossierTypologyDetail">
+                Multiple sub-$10,000 transactions detected aggregating from mule accounts.
+              </div>
+            </div>
+          </div>
+
+          <!-- Graph Topological Stats -->
+          <div class="glass-section">
+            <div class="section-header">
+              <h3><i class="fa-solid fa-chart-network"></i> Graph Topological Metrics</h3>
+            </div>
+            <div class="metrics-mini-grid">
+              <div class="metric-mini-tile">
+                <span class="m-label">Inflow Total</span>
+                <span class="m-val" id="dossierInflow">$0.00</span>
+              </div>
+              <div class="metric-mini-tile">
+                <span class="m-label">Outflow Total</span>
+                <span class="m-val" id="dossierOutflow">$0.00</span>
+              </div>
+              <div class="metric-mini-tile">
+                <span class="m-label">In-Degree (Fan-In)</span>
+                <span class="m-val" id="dossierInDeg">0</span>
+              </div>
+              <div class="metric-mini-tile">
+                <span class="m-label">Out-Degree (Fan-Out)</span>
+                <span class="m-val" id="dossierOutDeg">0</span>
+              </div>
+              <div class="metric-mini-tile">
+                <span class="m-label">Betweenness</span>
+                <span class="m-val" id="dossierBetweenness">0.000</span>
+              </div>
+              <div class="metric-mini-tile">
+                <span class="m-label">PageRank</span>
+                <span class="m-val" id="dossierPageRank">0.000</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Explainable AI: GAT Attention / Model Influence Breakdown -->
+          <div class="glass-section">
+            <div class="section-header">
+              <h3 id="dossierXaiHeader"><i class="fa-solid fa-network-wired"></i> GNN Neighbor Influence</h3>
+              <span class="badge badge-accent" id="dossierXaiBadge">XAI</span>
+            </div>
+            <div id="dossierAttentionList" class="attention-list">
+              <!-- Dynamically populated attention weights -->
+            </div>
+          </div>
+
+          <!-- Regulatory SAR Action -->
+          <div class="glass-section">
+            <div class="section-header">
+              <h3><i class="fa-solid fa-file-contract"></i> Regulatory Action</h3>
+            </div>
+            <button class="btn btn-accent btn-block" id="btnExportSAR">
+              <i class="fa-solid fa-file-arrow-down"></i> Generate FinCEN SAR Report
+            </button>
+          </div>
+        </div>
+
+        <!-- TAB 2: Full Transaction Ledger with CSV features -->
+        <div id="dossierTabLedger" class="dossier-tab-pane" style="display:none;">
+          <div class="glass-section">
+            <div class="section-header">
+              <h3><i class="fa-solid fa-list-ol"></i> Account Transaction History</h3>
+            </div>
+            <p class="ledger-intro">Extracted CSV features and direct fund routing for the active entity:</p>
+            <div class="table-responsive ledger-table-wrap">
+              <table class="ledger-table" id="accountLedgerTable">
+                <thead>
+                  <tr>
+                    <th>Flow</th>
+                    <th>Counterparty</th>
+                    <th>Amount</th>
+                    <th>Channel</th>
+                    <th>Date / Time</th>
+                    <th>Typology</th>
+                  </tr>
+                </thead>
+                <tbody id="accountLedgerBody">
+                  <!-- Populated dynamically -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </aside>
+  </main>
+
+  <!-- Bottom Drawer: Model Training Metrics & Confusion Matrix -->
+  <footer class="bottom-drawer">
+    <div class="drawer-header" id="toggleDrawer">
+      <div class="drawer-title">
+        <i class="fa-solid fa-chart-line"></i> Evaluation Dashboard &amp; Confusion Matrix
+      </div>
+      <div class="drawer-controls">
+        <span class="drawer-summary" id="drawerSummaryMetrics">Precision: 92.3% | Recall: 90.0% | F1: 91.1% | ROC-AUC: 0.964</span>
+        <button class="drawer-toggle-btn"><i class="fa-solid fa-chevron-up" id="drawerArrow"></i></button>
+      </div>
+    </div>
+
+    <div class="drawer-content" id="drawerContent">
+      <div class="drawer-grid">
+        <!-- Training Loss Chart -->
+        <div class="drawer-card">
+          <h4><i class="fa-solid fa-wave-pulse"></i> Training Convergence (Loss &amp; ROC-AUC)</h4>
+          <div class="chart-container">
+            <canvas id="trainingChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Confusion Matrix -->
+        <div class="drawer-card">
+          <h4><i class="fa-solid fa-table-cells"></i> Confusion Matrix (Test Set)</h4>
+          <div class="cm-wrapper">
+            <div class="cm-grid">
+              <div class="cm-cell cm-tn">
+                <span class="cm-num" id="cmTN">0</span>
+                <span class="cm-lbl">True Negative (Licit)</span>
+              </div>
+              <div class="cm-cell cm-fp">
+                <span class="cm-num" id="cmFP">0</span>
+                <span class="cm-lbl">False Positive</span>
+              </div>
+              <div class="cm-cell cm-fn">
+                <span class="cm-num" id="cmFN">0</span>
+                <span class="cm-lbl">False Negative</span>
+              </div>
+              <div class="cm-cell cm-tp">
+                <span class="cm-num" id="cmTP">0</span>
+                <span class="cm-lbl">True Positive (Illicit)</span>
+              </div>
+            </div>
+            <div class="cm-stats-col">
+              <div class="stat-line"><span>Precision:</span> <strong id="statPrec">0.0%</strong></div>
+              <div class="stat-line"><span>Recall:</span> <strong id="statRecall">0.0%</strong></div>
+              <div class="stat-line"><span>F1-Score:</span> <strong id="statF1">0.0%</strong></div>
+              <div class="stat-line"><span>PR-AUC:</span> <strong id="statPrAuc">0.000</strong></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Modal: Multi-Model Benchmark Arena -->
+  <div class="modal-overlay" id="benchmarkModal" style="display:none;">
+    <div class="modal-box">
+      <div class="modal-header">
+        <div class="modal-title">
+          <i class="fa-solid fa-trophy"></i> Multi-Architecture AML Benchmark Arena
+        </div>
+        <button class="modal-close-btn" id="btnCloseBenchmark">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-subtitle">
+          Comparative empirical evaluation across Graph Neural Networks (GCN, GAT, GraphSAGE) versus Traditional Tabular Baseline (MLP) on identical financial transaction test folds.
+        </p>
+        
+        <div class="table-responsive">
+          <table class="benchmark-table" id="benchmarkTable">
+            <thead>
+              <tr>
+                <th>Model Architecture</th>
+                <th>Graph Mechanism</th>
+                <th>ROC-AUC</th>
+                <th>PR-AUC</th>
+                <th>Precision</th>
+                <th>Recall</th>
+                <th>F1-Score</th>
+                <th>Latency (s)</th>
+              </tr>
+            </thead>
+            <tbody id="benchmarkTableBody">
+              <tr>
+                <td colspan="8" class="text-center">Running benchmark evaluation on GPU/CPU...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="chart-container benchmark-chart-container">
+          <canvas id="benchmarkChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Global Transaction Explorer -->
+  <div class="modal-overlay" id="explorerModal" style="display:none;">
+    <div class="modal-box modal-xl">
+      <div class="modal-header">
+        <div class="modal-title">
+          <i class="fa-solid fa-table-cells"></i> Global Network Transaction Explorer
+        </div>
+        <button class="modal-close-btn" id="btnCloseExplorer">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="explorer-filter-bar">
+          <div class="explorer-search-box">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="explorerSearchInput" placeholder="Search account ID, typology, channel..." class="form-input">
+          </div>
+          <label class="checkbox-label">
+            <input type="checkbox" id="explorerIllicitOnly"> Flagged Illicit Only
+          </label>
+          <span class="explorer-count" id="explorerTxnCount">Showing 0 transactions</span>
+        </div>
+        <div class="table-responsive explorer-table-wrap">
+          <table class="benchmark-table" id="explorerTable">
+            <thead>
+              <tr>
+                <th>From Account</th>
+                <th>To Account</th>
+                <th>Amount</th>
+                <th>Method</th>
+                <th>Currency</th>
+                <th>Date / Time</th>
+                <th>Location Route</th>
+                <th>Typology</th>
+                <th>Status</th>
+                <th>Inspect</th>
+              </tr>
+            </thead>
+            <tbody id="explorerTableBody">
+              <!-- Populated dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Transaction Edge Inspector -->
+  <div class="modal-overlay" id="edgeModal" style="display:none;">
+    <div class="modal-box modal-md">
+      <div class="modal-header">
+        <div class="modal-title">
+          <i class="fa-solid fa-arrow-right-arrow-left"></i> Transaction Inspector
+        </div>
+        <button class="modal-close-btn" id="btnCloseEdgeModal">&times;</button>
+      </div>
+      <div class="modal-body" id="edgeModalBody">
+        <!-- Populated dynamically -->
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="btnCloseEdgeFooter">Close</button>
+        <button class="btn btn-primary" id="btnFocusSender">Focus Sender</button>
+        <button class="btn btn-accent" id="btnFocusReceiver">Focus Receiver</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: FinCEN SAR Report Preview -->
+  <div class="modal-overlay" id="sarModal" style="display:none;">
+    <div class="modal-box modal-lg">
+      <div class="modal-header">
+        <div class="modal-title">
+          <i class="fa-solid fa-file-signature"></i> Suspicious Activity Report (FinCEN Form 111 Standard)
+        </div>
+        <button class="modal-close-btn" id="btnCloseSar">&times;</button>
+      </div>
+      <div class="modal-body">
+        <pre class="sar-code-block" id="sarJsonContent"></pre>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="btnCopySar"><i class="fa-solid fa-copy"></i> Copy JSON</button>
+        <button class="btn btn-accent" id="btnDownloadSarFile"><i class="fa-solid fa-download"></i> Download Audit File</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Upload Dataset -->
+  <div class="modal-overlay" id="uploadModal" style="display:none;">
+    <div class="modal-box modal-lg upload-modal-box">
+      <div class="modal-header">
+        <div class="modal-title">
+          <i class="fa-solid fa-database"></i> Import Financial Crime Dataset
+        </div>
+        <button class="modal-close-btn" id="btnCloseUpload">&times;</button>
+      </div>
+      <div class="modal-body">
+
+        <!-- Step 1: Drop zone + Quick SAML-D Load -->
+        <div id="uploadStep1">
+          <!-- 1-Click SAML-D.csv quick loader -->
+          <div class="local-dataset-card">
+            <div class="local-card-left">
+              <div class="local-badge"><i class="fa-solid fa-bolt"></i> FAST LOCAL PRE-SET</div>
+              <div class="local-title">SAML-D.csv (1 GB Real Synthetic AML Dataset)</div>
+              <div class="local-desc">Instant 1-click stream loading directly from workspace &mdash; no upload wait time.</div>
+            </div>
+            <div class="local-card-right">
+              <div class="local-options">
+                <label>Transactions to Sample:</label>
+                <select id="samlSampleSize" class="form-select select-compact">
+                  <option value="600">600 Txns (~800 Accounts)</option>
+                  <option value="1200" selected>1,200 Txns (~1,500 Accounts)</option>
+                  <option value="2500">2,500 Txns (~3,000 Accounts)</option>
+                  <option value="5000">5,000 Txns (~5,500 Accounts)</option>
+                </select>
+              </div>
+              <button class="btn btn-primary glow-button" id="btnLoadLocalSaml">
+                <i class="fa-solid fa-play"></i> Instant Load SAML-D
+              </button>
+            </div>
+          </div>
+
+          <div class="upload-divider"><span>OR UPLOAD ANY CUSTOM CSV DATASET</span></div>
+
+          <div class="drop-zone" id="dropZone">
+            <div class="drop-zone-icon"><i class="fa-solid fa-file-csv"></i></div>
+            <div class="drop-zone-title">Drop your CSV file here</div>
+            <div class="drop-zone-sub">or click to browse &mdash; any CSV with sender / receiver / amount columns</div>
+            <input type="file" id="csvFileInput" accept=".csv" style="display:none;">
+            <button class="btn btn-secondary" id="btnBrowseFile" style="margin-top:1rem;">
+              <i class="fa-solid fa-folder-open"></i> Browse Custom File
+            </button>
+          </div>
+          <div class="upload-examples">
+            <span class="upload-ex-label">Auto-detects formats like:</span>
+            <code>SAML-D</code><code>PaySim (nameOrig/nameDest)</code><code>Elliptic</code><code>IBM AML</code>
+          </div>
+        </div>
+
+        <!-- Step 2: Column mapping & Feature preview (shown after custom file is chosen) -->
+        <div id="uploadStep2" style="display:none;">
+          <div class="upload-file-info" id="uploadFileInfo"></div>
+
+          <!-- Feature Extraction Pipeline Overview -->
+          <div class="features-summary-banner">
+            <div class="feat-summary-pill"><i class="fa-solid fa-diagram-project"></i> <strong>Graph Topology:</strong> Sender &rarr; Receiver Nodes</div>
+            <div class="feat-summary-pill"><i class="fa-solid fa-money-bill-wave"></i> <strong>Flow Tensor:</strong> Amount, Method, Currency</div>
+            <div class="feat-summary-pill"><i class="fa-solid fa-crosshairs"></i> <strong>Supervised Target:</strong> Laundering Label (0/1)</div>
+          </div>
+
+          <div class="col-map-section">
+            <div class="col-map-header">
+              <div>
+                <i class="fa-solid fa-table-columns"></i> Detected Dataset Features &amp; GNN Mapping
+                <span class="col-map-hint">(Review how columns map to Neural Network inputs)</span>
+              </div>
+              <span class="badge badge-accent" id="detectedColCount">0 Columns</span>
+            </div>
+            <table class="col-map-table" id="colMapTable">
+              <thead>
+                <tr>
+                  <th>Neural Role</th>
+                  <th>Feature Category</th>
+                  <th>Detected CSV Header</th>
+                  <th>Column Override</th>
+                </tr>
+              </thead>
+              <tbody id="colMapBody"></tbody>
+            </table>
+          </div>
+
+          <!-- Live Sample Feature Data Preview -->
+          <div class="sample-preview-container" id="samplePreviewContainer">
+            <div class="sample-preview-header">
+              <div>
+                <i class="fa-solid fa-eye"></i> Live CSV Feature Preview (First 3 Rows)
+                <span class="col-map-hint">Inspect raw column contents</span>
+              </div>
+              <span class="badge badge-muted" id="previewRowBadge">3 sample rows</span>
+            </div>
+            <div class="sample-preview-scroll" id="samplePreviewScroll">
+              <table class="sample-preview-table" id="samplePreviewTable">
+                <thead id="samplePreviewHead"></thead>
+                <tbody id="samplePreviewBody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="upload-options-row">
+            <label><i class="fa-solid fa-sliders"></i> Sample Graph Density:</label>
+            <select id="customSampleSize" class="form-select select-compact">
+              <option value="600">600 Transactions (~800 Accounts)</option>
+              <option value="1200" selected>1,200 Transactions (~1,500 Accounts)</option>
+              <option value="2500">2,500 Transactions (~3,000 Accounts)</option>
+              <option value="5000">5,000 Transactions (~5,500 Accounts)</option>
+            </select>
+          </div>
+
+          <div class="upload-warning" id="uploadSampleWarning" style="display:none;">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            <span id="uploadWarningText"></span>
+          </div>
+        </div>
+
+        <!-- Progress bar (shown during import) -->
+        <div id="uploadProgress" style="display:none;">
+          <div class="upload-progress-label" id="uploadProgressLabel">Streaming &amp; parsing transactions&hellip;</div>
+          <div class="upload-progress-bar-wrap">
+            <div class="upload-progress-bar" id="uploadProgressBar"></div>
+          </div>
+        </div>
+
+      </div>
+      <div class="modal-footer" id="uploadModalFooter">
+        <button class="btn btn-secondary" id="btnCancelUpload">Cancel</button>
+        <button class="btn btn-primary glow-button" id="btnImportDataset" disabled>
+          <i class="fa-solid fa-bolt"></i> Import &amp; Render Graph
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/js/app.js"></script>
+</body>
+</html>
